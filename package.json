@@ -1,0 +1,14 @@
+{
+  "name": "webhook-allowlist",
+  "version": "2.0.1",
+  "description": "Validate outbound webhook callback URLs with hostfence before delivery.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": "./src/index.js",
+  "license": "MIT",
+  "repository": "github:hon900/webhook-allowlist",
+  "engines": { "node": ">=18.18.0" },
+  "dependencies": {
+    "hostfence": "github:hon900/hostfence#v1.2.0"
+  }
+}
