@@ -3,18 +3,25 @@ import { Hostfence, HostfenceError } from "hostfence";
 export { HostfenceError };
 
 export function createWebhookGuard(options = {}) {
-  const fence = new Hostfence({
-    allowedHosts: options.allowedHosts,
-    extraDeniedHosts: options.extraDeniedHosts,
-  });
+  const fence = new Hostfence({ ...options, allowCredentials: false });
+
+  async function check(callbackUrl) {
+    const result = await fence.check(callbackUrl);
+    // Keep the webhook credential rule when used with older hostfence releases.
+    if (result.ok && (result.url.username || result.url.password)) {
+      return { ...result, ok: false, reasons: ["credentials in webhook URL"] };
+    }
+    return result;
+  }
 
   return {
+    check,
     async validate(callbackUrl) {
-      const url = await fence.assert(callbackUrl);
-      if (url.username || url.password) {
-        throw new HostfenceError(url.toString(), ["credentials in webhook URL"]);
+      const result = await check(callbackUrl);
+      if (!result.ok) {
+        throw new HostfenceError(result.url.toString(), result.reasons);
       }
-      return url;
+      return result.url;
     },
   };
 }
